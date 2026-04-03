@@ -1,0 +1,12 @@
+{
+  "name": "serofix-thing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Private TikTok public-profile lookup with a live Node server.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.40.0"
+  }
+}

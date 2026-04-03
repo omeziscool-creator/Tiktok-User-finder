@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Private TikTok public-profile lookup with favorites, URL resolving, analysis, and theme switching.">
+  <title>serofix-thing/src | TikTok User Lookup</title>
+  <link rel="icon" href="icon.png?v=20260403d" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260403d">
+  <script defer src="script.js?v=20260403d"></script>
+</head>
+<body>
+  <div class="background-orb orb-a" aria-hidden="true"></div>
+  <div class="background-orb orb-b" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Go to top">serofix-thing/<span>src</span></a>
+
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#lookup">Lookup</a>
+      <a href="#favorites">Favorites</a>
+      <a href="#tools">Tools</a>
+      <a href="#analysis">Analysis</a>
+      <a href="#notes">Notes</a>
+    </nav>
+
+    <div class="theme-switcher" role="group" aria-label="Theme">
+      <button type="button" class="theme-option" data-theme="light">White</button>
+      <button type="button" class="theme-option active" data-theme="amber">Amber</button>
+      <button type="button" class="theme-option" data-theme="dark">Dark</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section id="lookup" class="section hero reveal">
+      <div class="hero-copy">
+        <p class="eyebrow">PRIVATE TIKTOK LOOKUP</p>
+        <h1>Search a public account, favorite it, and open it again in one click.</h1>
+        <p class="lead">
+          This private build fetches public TikTok profile data through the local Node server, shows the account details in the UI, and stores favorites in your browser so you can reopen tracked accounts quickly.
+        </p>
+
+        <form id="lookup-form" class="lookup-panel">
+          <label for="username">User Lookup</label>
+          <div class="lookup-row">
+            <span class="lookup-prefix">@</span>
+            <input id="username" name="username" type="text" autocomplete="off" placeholder="khaby.lame">
+            <button id="lookup-button" type="submit" class="button button-dark">Lookup account</button>
+          </div>
+          <div class="preset-list" aria-label="Quick handles">
+            <button type="button" class="preset" data-username="khaby.lame">khaby.lame</button>
+            <button type="button" class="preset" data-username="charlidamelio">charlidamelio</button>
+            <button type="button" class="preset" data-username="mrbeast">mrbeast</button>
+          </div>
+          <div class="utility-row">
+            <button type="button" id="paste-button" class="button button-light compact">Paste</button>
+            <button type="button" id="open-recent-button" class="button button-light compact">Recent</button>
+          </div>
+          <p class="fine-print">
+            A plain HTML file cannot reliably fetch live TikTok data by itself because of browser cross-origin limits. If this page is opened from <strong>file://</strong> or another local port, it will automatically call <strong>http://127.0.0.1:3000</strong> for live lookups.
+          </p>
+          <p id="lookup-status" class="status-message" role="status" aria-live="polite">Ready for a live lookup.</p>
+        </form>
+
+        <form id="url-form" class="lookup-panel secondary-panel">
+          <label for="profile-url-input">Url Tracker</label>
+          <div class="lookup-row">
+            <input id="profile-url-input" name="profile-url" type="url" autocomplete="off" placeholder="https://www.tiktok.com/@khaby.lame">
+            <button id="url-button" type="submit" class="button button-light">Resolve URL</button>
+          </div>
+          <p id="url-status" class="status-message">Paste a TikTok URL to resolve the handle and load the account.</p>
+        </form>
+      </div>
+
+      <div class="hero-preview">
+        <article class="profile-card">
+          <div class="profile-head">
+            <div class="profile-media">
+              <img id="profile-image" class="profile-image" alt="" role="button" tabindex="0" hidden>
+              <div id="profile-avatar" class="avatar">TT</div>
+            </div>
+            <div class="profile-title">
+              <div class="status-row">
+                <h2 id="profile-name">Loading...</h2>
+                <span id="verified-badge" class="badge" hidden>Verified</span>
+                <span id="dev-badge" class="badge dev-badge" hidden>DEV</span>
+              </div>
+              <p id="profile-handle" class="muted">@handle</p>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button id="favorite-toggle" type="button" class="button button-light compact">Add Favorite</button>
+            <a id="view-profile-link" class="button button-light compact" href="https://www.tiktok.com" target="_blank" rel="noreferrer">Open TikTok</a>
+            <a id="download-avatar-link" class="button button-dark compact" href="#" download>Download Avatar</a>
+          </div>
+
+          <div class="stats-grid">
+            <div>
+              <strong id="stat-followers">-</strong>
+              <span>Followers</span>
+            </div>
+            <div>
+              <strong id="stat-following">-</strong>
+              <span>Following</span>
+            </div>
+            <div>
+              <strong id="stat-likes">-</strong>
+              <span>Likes</span>
+            </div>
+            <div>
+              <strong id="stat-videos">-</strong>
+              <span>Videos</span>
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <div>
+              <span>Username</span>
+              <strong id="profile-username">-</strong>
+            </div>
+            <div class="detail-card detail-card-wide">
+              <span>User ID</span>
+              <strong id="profile-user-id">-</strong>
+            </div>
+            <div class="detail-card detail-card-wide">
+              <span>Country</span>
+              <strong id="profile-country">-</strong>
+            </div>
+            <div>
+              <span>Account Type</span>
+              <strong id="profile-account-type">-</strong>
+            </div>
+            <div>
+              <span>Language</span>
+              <strong id="profile-language">-</strong>
+            </div>
+            <div>
+              <span>Private</span>
+              <strong id="profile-private">-</strong>
+            </div>
+            <div>
+              <span>Created</span>
+              <strong id="profile-created">-</strong>
+            </div>
+            <div>
+              <span>Nickname Edited At</span>
+              <strong id="profile-nickname-edited">-</strong>
+            </div>
+            <div>
+              <span>Username Changed At</span>
+              <strong id="profile-username-changed">-</strong>
+            </div>
+            <div>
+              <span>Stories</span>
+              <strong id="profile-stories">-</strong>
+            </div>
+            <div>
+              <span>Last Searched</span>
+              <strong id="profile-last-searched">-</strong>
+            </div>
+          </div>
+
+          <div class="bio-block">
+            <span>About</span>
+            <p id="profile-bio">Waiting for a lookup.</p>
+          </div>
+
+          <div class="profile-links">
+            <a id="profile-url-display" class="text-link" href="https://www.tiktok.com" target="_blank" rel="noreferrer">Open profile page</a>
+            <a id="bio-link-display" class="text-link" href="#" target="_blank" rel="noreferrer" hidden>Open bio link</a>
+          </div>
+
+          <div class="tool-action-row">
+            <button type="button" id="view-stories-button" class="button button-light compact">View Stories</button>
+            <button type="button" id="view-videos-button" class="button button-light compact">View Videos</button>
+            <button type="button" id="show-following-button" class="button button-light compact">Show Following</button>
+            <button type="button" id="show-followers-button" class="button button-light compact">Show Followers</button>
+            <button type="button" id="reposts-button" class="button button-light compact">Reposts Viewer</button>
+            <button type="button" id="analysis-button" class="button button-dark compact">Full Analysis</button>
+          </div>
+        </article>
+
+        <article class="code-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">LIVE JSON</p>
+              <h3>Latest API response</h3>
+            </div>
+            <div class="card-actions">
+              <button id="download-response" type="button" class="button button-light compact">Download JSON</button>
+              <button id="copy-response" type="button" class="button button-light compact">Copy JSON</button>
+            </div>
+          </div>
+          <pre id="response-preview" class="code-block">Waiting for a live lookup...</pre>
+        </article>
+      </div>
+    </section>
+
+    <section id="favorites" class="section reveal">
+      <div class="section-heading">
+        <p class="eyebrow">USER TRACKER</p>
+        <h2>Favorites and recent lookups stay one click away.</h2>
+        <p class="lead">
+          Favorite the accounts you revisit often, then click a saved item to load it again instantly. The recent list updates as you search.
+        </p>
+      </div>
+
+      <div class="tracker-layout">
+        <article class="favorites-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">FAVORITES</p>
+              <h3>Saved accounts</h3>
+            </div>
+            <button id="clear-favorites" type="button" class="button button-light compact">Clear Favorites</button>
+          </div>
+          <div id="favorites-list" class="saved-list empty-state">No favorites yet.</div>
+        </article>
+
+        <article class="favorites-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">RECENT</p>
+              <h3>Recent lookups</h3>
+            </div>
+            <button id="clear-recent" type="button" class="button button-light compact">Clear Recent</button>
+          </div>
+          <div id="recent-list" class="saved-list empty-state">No recent lookups yet.</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tools" class="section reveal">
+      <div class="section-heading">
+        <p class="eyebrow">TOOLS</p>
+        <h2>All requested features are represented in the interface.</h2>
+      </div>
+
+      <div class="tools-grid">
+        <article class="tool-card">
+          <h3>User Lookup</h3>
+          <p>Loads a public profile by handle and fills the main result card with the latest live fields.</p>
+        </article>
+        <article class="tool-card">
+          <h3>Story Viewer</h3>
+          <p>Uses a rendered local browser session to try loading the same public story feed the TikTok profile page requests.</p>
+        </article>
+        <article class="tool-card">
+          <h3>View Videos</h3>
+          <p>Shows the public video count and attempts to open the signed public video feed when TikTok exposes it to the rendered browser session.</p>
+        </article>
+        <article class="tool-card">
+          <h3>Url Tracker</h3>
+          <p>Paste a TikTok URL, resolve the handle, and jump straight into the profile lookup.</p>
+        </article>
+        <article class="tool-card">
+          <h3>User Tracker</h3>
+          <p>Favorites and recent lookups act as your local account tracker inside the browser.</p>
+        </article>
+        <article class="tool-card">
+          <h3>Full Analysis</h3>
+          <p>Summarizes the public account state, availability of extra signals, and the current lookup source.</p>
+        </article>
+        <article class="tool-card tool-card-disabled">
+          <h3>Email2Username Tool</h3>
+          <p>Shown in the HTML as requested, but intentionally disabled in this public-data build because it would rely on non-public account linkage.</p>
+        </article>
+        <article class="tool-card">
+          <h3>Reposts Viewer</h3>
+          <p>Uses a rendered local browser session to show public repost entries and their available public video streams when TikTok exposes them.</p>
+        </article>
+        <article class="tool-card">
+          <h3>Download Avatar</h3>
+          <p>Downloads the current account's public profile image through the local server.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="analysis" class="section reveal">
+      <div class="section-heading">
+        <p class="eyebrow">FULL ANALYSIS</p>
+        <h2>View Stories, follower visibility, and public-account notes.</h2>
+      </div>
+
+      <div class="analysis-layout">
+        <article class="doc-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">ACTIONS</p>
+              <h3>Tool output</h3>
+            </div>
+          </div>
+          <div id="tool-console" class="analysis-console">
+            Run a lookup to see story status, tracker notes, and public-data availability.
+          </div>
+        </article>
+
+        <article class="doc-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">API</p>
+              <h3>Live endpoints</h3>
+            </div>
+          </div>
+          <pre id="endpoint-code" class="code-block">GET /api/profile?username=khaby.lame
+GET /api/resolve-url?url=https://www.tiktok.com/@khaby.lame
+GET /api/avatar?username=khaby.lame</pre>
+        </article>
+      </div>
+    </section>
+
+    <section id="notes" class="section reveal">
+      <div class="notes-layout">
+        <article class="note-card">
+          <p class="eyebrow">FILE MODE FIX</p>
+          <h2>The CORS error came from opening the page with `file://`.</h2>
+          <p>
+            The script now falls back to <strong>http://127.0.0.1:3000</strong> when opened from disk, and the server now sends CORS headers for the API routes.
+          </p>
+        </article>
+
+        <article class="note-card">
+          <p class="eyebrow">PUBLIC DATA ONLY</p>
+          <h2>Unavailable data stays unavailable.</h2>
+          <p>
+            Some public TikTok pages expose handle, user ID, bio, language, stats, image, and timing fields. Stories, reposts, follower lists, and account-type signals are only shown when the public payload actually contains them.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Private TikTok lookup with favorites, URL resolving, avatar download, and live account details.</p>
+    <div class="footer-links">
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+  <div id="image-modal" class="media-modal" hidden>
+    <button id="image-modal-close" type="button" class="media-modal-close" aria-label="Close image">x</button>
+    <img id="image-modal-content" class="media-modal-image" alt="Expanded profile image">
+  </div>
+
+  <div id="info-modal" class="info-modal" hidden>
+    <div class="info-modal-card">
+      <div class="card-head">
+        <div>
+          <p class="eyebrow">TOOL RESULT</p>
+          <h3 id="info-modal-title">Tool output</h3>
+        </div>
+        <button id="info-modal-close" type="button" class="button button-light compact">Close</button>
+      </div>
+      <div id="info-modal-content" class="analysis-console"></div>
+    </div>
+  </div>
+</body>
+</html>
